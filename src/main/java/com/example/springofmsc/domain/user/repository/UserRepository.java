@@ -1,4 +1,4 @@
-package com.example.springofmsc.repository;
+package com.example.springofmsc.domain.user.repository;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.example.springofmsc.entity.User;
+import com.example.springofmsc.domain.user.entity.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {

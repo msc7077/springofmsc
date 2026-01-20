@@ -1,4 +1,4 @@
-package com.example.springofmsc.dto;
+package com.example.springofmsc.domain.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

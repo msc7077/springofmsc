@@ -1,4 +1,4 @@
-package com.example.springofmsc.entity;
+package com.example.springofmsc.domain.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -47,4 +47,3 @@ public class User {
     @Column(name = "file_type", length = 100)
     private String fileType;
 }
-

@@ -1,4 +1,4 @@
-package com.example.springofmsc.service;
+package com.example.springofmsc.domain.file.service;
 
 import java.io.IOException;
 import java.net.URLEncoder;
@@ -17,7 +17,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.example.springofmsc.entity.User;
+import com.example.springofmsc.domain.user.entity.User;
+import com.example.springofmsc.domain.user.service.UserService;
 
 /**
  * 파일 업로드/다운로드 비즈니스 로직을 처리하는 Service 계층

@@ -1,4 +1,4 @@
-package com.example.springofmsc.controller;
+package com.example.springofmsc.domain.user.controller;
 
 import java.util.List;
 
@@ -14,13 +14,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.springofmsc.dto.UserRequestDTO;
-import com.example.springofmsc.dto.UserResponseDTO;
-import com.example.springofmsc.service.UserService;
+import com.example.springofmsc.domain.user.dto.UserRequestDTO;
+import com.example.springofmsc.domain.user.dto.UserResponseDTO;
+import com.example.springofmsc.domain.user.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/users")
@@ -156,7 +157,7 @@ public class UserController {
 
     @PostMapping
     @Operation(summary = "사용자 생성", description = "새로운 사용자를 생성합니다.")
-    public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserRequestDTO requestDTO) {
+    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO requestDTO) {
         UserResponseDTO savedUser = userService.createUser(requestDTO);
         return ResponseEntity.status(201).body(savedUser);
     }
@@ -165,7 +166,7 @@ public class UserController {
     @Operation(summary = "사용자 정보 수정", description = "기존 사용자의 정보를 수정합니다.")
     public ResponseEntity<UserResponseDTO> updateUser(
             @PathVariable Long id,
-            @RequestBody UserRequestDTO requestDTO) {
+            @Valid @RequestBody UserRequestDTO requestDTO) {
         UserResponseDTO updatedUser = userService.updateUser(id, requestDTO);
         return ResponseEntity.ok(updatedUser);
     }

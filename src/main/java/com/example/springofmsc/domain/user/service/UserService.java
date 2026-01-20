@@ -1,4 +1,4 @@
-package com.example.springofmsc.service;
+package com.example.springofmsc.domain.user.service;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,10 +10,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.springofmsc.dto.UserRequestDTO;
-import com.example.springofmsc.dto.UserResponseDTO;
-import com.example.springofmsc.entity.User;
-import com.example.springofmsc.repository.UserRepository;
+import com.example.springofmsc.domain.user.dto.UserRequestDTO;
+import com.example.springofmsc.domain.user.dto.UserResponseDTO;
+import com.example.springofmsc.domain.user.entity.User;
+import com.example.springofmsc.domain.user.repository.UserRepository;
 
 /**
  * 사용자 비즈니스 로직을 처리하는 Service 계층

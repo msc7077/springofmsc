@@ -17,6 +17,11 @@ bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
 
+### Generated files ###
+### 빌드 시 자동 생성: Gradle 빌드 시 필요한 파일을 자동으로 생성됨 ###
+generated/
+**/generated/
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
