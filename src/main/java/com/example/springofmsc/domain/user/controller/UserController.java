@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.springofmsc.common.dto.ApiResponse;
+import com.example.springofmsc.common.util.ResponseUtil;
 import com.example.springofmsc.domain.user.dto.UserRequestDTO;
 import com.example.springofmsc.domain.user.dto.UserResponseDTO;
 import com.example.springofmsc.domain.user.service.UserService;
@@ -44,7 +46,7 @@ public class UserController {
         // 페이징 파라미터가 없으면 전체 목록 반환
         if (page == null && size == null && sort == null) {
             List<UserResponseDTO> users = userService.getAllUsers();
-            return ResponseEntity.ok(users);
+            return ResponseUtil.ok(users, "사용자 목록 조회 성공");
         }
 
         // 페이징 파라미터가 있으면 페이징 처리
@@ -52,38 +54,38 @@ public class UserController {
         int pageSize = (size != null && size > 0) ? size : 10;
 
         Page<UserResponseDTO> userPage = userService.getAllUsers(pageNumber, pageSize, sort);
-        return ResponseEntity.ok(userPage);
+        return ResponseUtil.ok(userPage, "사용자 목록 조회 성공 (페이징)");
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "사용자 ID로 조회", description = "사용자 ID로 특정 사용자를 조회합니다.")
-    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserById(@PathVariable Long id) {
         return userService.getUserById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(user -> ResponseUtil.ok(user, "사용자 조회 성공"))
+                .orElse(ResponseUtil.notFound("사용자를 찾을 수 없습니다."));
     }
 
     @GetMapping("/user-id/{userId}")
     @Operation(summary = "user_id로 사용자 조회", description = "user_id로 특정 사용자를 조회합니다.")
-    public ResponseEntity<UserResponseDTO> getUserByUserId(@PathVariable String userId) {
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserByUserId(@PathVariable String userId) {
         return userService.getUserByUserId(userId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(user -> ResponseUtil.ok(user, "사용자 조회 성공"))
+                .orElse(ResponseUtil.notFound("사용자를 찾을 수 없습니다."));
     }
 
     @GetMapping("/email/{email}")
     @Operation(summary = "이메일로 사용자 조회", description = "이메일 주소로 사용자를 조회합니다.")
-    public ResponseEntity<UserResponseDTO> getUserByEmail(@PathVariable String email) {
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserByEmail(@PathVariable String email) {
         return userService.getUserByEmail(email)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+                .map(user -> ResponseUtil.ok(user, "사용자 조회 성공"))
+                .orElse(ResponseUtil.notFound("사용자를 찾을 수 없습니다."));
     }
 
     @GetMapping("/name/{name}")
     @Operation(summary = "이름으로 사용자 조회", description = "정확한 이름으로 사용자 목록을 조회합니다.")
-    public ResponseEntity<List<UserResponseDTO>> getUsersByName(@PathVariable String name) {
+    public ResponseEntity<ApiResponse<List<UserResponseDTO>>> getUsersByName(@PathVariable String name) {
         List<UserResponseDTO> users = userService.getUsersByName(name);
-        return ResponseEntity.ok(users);
+        return ResponseUtil.ok(users, "사용자 목록 조회 성공");
     }
 
     @GetMapping("/name/contains/{keyword}")
@@ -97,7 +99,7 @@ public class UserController {
         // 페이징 파라미터가 없으면 전체 목록 반환
         if (page == null && size == null && sort == null) {
             List<UserResponseDTO> users = userService.getUsersByNameContaining(keyword);
-            return ResponseEntity.ok(users);
+            return ResponseUtil.ok(users, "사용자 검색 성공");
         }
 
         // 페이징 처리
@@ -105,7 +107,7 @@ public class UserController {
         int pageSize = (size != null && size > 0) ? size : 10;
 
         Page<UserResponseDTO> userPage = userService.getUsersByNameContaining(keyword, pageNumber, pageSize, sort);
-        return ResponseEntity.ok(userPage);
+        return ResponseUtil.ok(userPage, "사용자 검색 성공 (페이징)");
     }
 
     @GetMapping("/age/{age}")
@@ -119,7 +121,7 @@ public class UserController {
         // 페이징 파라미터가 없으면 전체 목록 반환
         if (page == null && size == null && sort == null) {
             List<UserResponseDTO> users = userService.getUsersByAge(age);
-            return ResponseEntity.ok(users);
+            return ResponseUtil.ok(users, "사용자 조회 성공");
         }
 
         // 페이징 처리
@@ -127,7 +129,7 @@ public class UserController {
         int pageSize = (size == null || size <= 0) ? 10 : size;
 
         Page<UserResponseDTO> userPage = userService.getUsersByAge(age, pageNumber, pageSize, sort);
-        return ResponseEntity.ok(userPage);
+        return ResponseUtil.ok(userPage, "사용자 조회 성공 (페이징)");
     }
 
     @GetMapping("/search")
@@ -144,7 +146,7 @@ public class UserController {
         // 페이징 파라미터가 없으면 전체 목록 반환
         if (page == null && size == null && sort == null) {
             List<UserResponseDTO> users = userService.searchUsers(name, age, phone, address);
-            return ResponseEntity.ok(users);
+            return ResponseUtil.ok(users, "사용자 검색 성공");
         }
 
         // 페이징 처리
@@ -152,29 +154,29 @@ public class UserController {
         int pageSize = (size != null && size > 0) ? size : 10;
 
         Page<UserResponseDTO> userPage = userService.searchUsers(name, age, phone, address, pageNumber, pageSize, sort);
-        return ResponseEntity.ok(userPage);
+        return ResponseUtil.ok(userPage, "사용자 검색 성공 (페이징)");
     }
 
     @PostMapping
     @Operation(summary = "사용자 생성", description = "새로운 사용자를 생성합니다.")
-    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponse<UserResponseDTO>> createUser(@Valid @RequestBody UserRequestDTO requestDTO) {
         UserResponseDTO savedUser = userService.createUser(requestDTO);
-        return ResponseEntity.status(201).body(savedUser);
+        return ResponseUtil.created(savedUser, "사용자가 성공적으로 생성되었습니다.");
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "사용자 정보 수정", description = "기존 사용자의 정보를 수정합니다.")
-    public ResponseEntity<UserResponseDTO> updateUser(
+    public ResponseEntity<ApiResponse<UserResponseDTO>> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody UserRequestDTO requestDTO) {
         UserResponseDTO updatedUser = userService.updateUser(id, requestDTO);
-        return ResponseEntity.ok(updatedUser);
+        return ResponseUtil.ok(updatedUser, "사용자 정보가 성공적으로 수정되었습니다.");
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "사용자 삭제", description = "사용자를 삭제합니다.")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return ResponseEntity.noContent().build();
+        return ResponseUtil.noContent();
     }
 }
