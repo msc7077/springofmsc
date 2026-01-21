@@ -2,13 +2,20 @@ spring:
   application:
     name: springofmsc
   datasource:
-    url: jdbc:mysql://localhost:3306/msc_db?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
-    username: msc_db_user
-    password: 1234
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    # Master-Slave 설정
+    master:
+      url: jdbc:mysql://localhost:33061/msc_database?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      username: app_master
+      password: 1234
+      driver-class-name: com.mysql.cj.jdbc.Driver
+    slave:
+      url: jdbc:mysql://localhost:33062/msc_database?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      username: app_slave
+      password: 1234
+      driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: validate # 테이블은 수동으로 생성 (validate: 스키마 검증만 수행)
+      ddl-auto: none # 스키마 검증 비활성화 (실제 DB 스키마와 엔티티가 다를 수 있으므로)
     show-sql: true # SQL 쿼리 로그 출력
     properties:
       hibernate:

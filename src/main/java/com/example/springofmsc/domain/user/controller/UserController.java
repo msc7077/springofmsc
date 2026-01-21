@@ -25,6 +25,10 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+/**
+ * 사용자 컨트롤러
+ * 실제 DB 스키마에 맞춘 구조
+ */
 @RestController
 @RequestMapping("/api/users")
 @Tag(name = "User", description = "사용자 CRUD API")
@@ -65,18 +69,10 @@ public class UserController {
                 .orElse(ResponseUtil.notFound("사용자를 찾을 수 없습니다."));
     }
 
-    @GetMapping("/user-id/{userId}")
-    @Operation(summary = "user_id로 사용자 조회", description = "user_id로 특정 사용자를 조회합니다.")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserByUserId(@PathVariable String userId) {
-        return userService.getUserByUserId(userId)
-                .map(user -> ResponseUtil.ok(user, "사용자 조회 성공"))
-                .orElse(ResponseUtil.notFound("사용자를 찾을 수 없습니다."));
-    }
-
-    @GetMapping("/email/{email}")
-    @Operation(summary = "이메일로 사용자 조회", description = "이메일 주소로 사용자를 조회합니다.")
-    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserByEmail(@PathVariable String email) {
-        return userService.getUserByEmail(email)
+    @GetMapping("/userid/{userid}")
+    @Operation(summary = "userid로 사용자 조회", description = "userid로 특정 사용자를 조회합니다.")
+    public ResponseEntity<ApiResponse<UserResponseDTO>> getUserByUserid(@PathVariable String userid) {
+        return userService.getUserByUserid(userid)
                 .map(user -> ResponseUtil.ok(user, "사용자 조회 성공"))
                 .orElse(ResponseUtil.notFound("사용자를 찾을 수 없습니다."));
     }
@@ -110,17 +106,17 @@ public class UserController {
         return ResponseUtil.ok(userPage, "사용자 검색 성공 (페이징)");
     }
 
-    @GetMapping("/age/{age}")
-    @Operation(summary = "나이로 사용자 조회", description = "나이로 사용자 목록을 조회합니다. 페이징 파라미터를 제공하면 페이징 처리된 결과를 반환합니다.")
-    public ResponseEntity<?> getUsersByAge(
-            @PathVariable Integer age,
+    @GetMapping("/status/{status}")
+    @Operation(summary = "계정 상태로 사용자 조회", description = "계정 상태로 사용자 목록을 조회합니다. 페이징 파라미터를 제공하면 페이징 처리된 결과를 반환합니다.")
+    public ResponseEntity<?> getUsersByStatus(
+            @PathVariable String status,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(required = false) Integer page,
             @Parameter(description = "페이지 크기", example = "10") @RequestParam(required = false) Integer size,
-            @Parameter(description = "정렬 기준", example = "age,asc") @RequestParam(required = false) String sort) {
+            @Parameter(description = "정렬 기준", example = "id,asc") @RequestParam(required = false) String sort) {
 
         // 페이징 파라미터가 없으면 전체 목록 반환
         if (page == null && size == null && sort == null) {
-            List<UserResponseDTO> users = userService.getUsersByAge(age);
+            List<UserResponseDTO> users = userService.getUsersByStatus(status);
             return ResponseUtil.ok(users, "사용자 조회 성공");
         }
 
@@ -128,24 +124,23 @@ public class UserController {
         int pageNumber = (page == null || page < 0) ? 0 : page;
         int pageSize = (size == null || size <= 0) ? 10 : size;
 
-        Page<UserResponseDTO> userPage = userService.getUsersByAge(age, pageNumber, pageSize, sort);
+        Page<UserResponseDTO> userPage = userService.getUsersByStatus(status, pageNumber, pageSize, sort);
         return ResponseUtil.ok(userPage, "사용자 조회 성공 (페이징)");
     }
 
     @GetMapping("/search")
-    @Operation(summary = "복합 조건 검색", description = "이름, 나이, 휴대번호, 주소를 조건으로 사용하여 사용자를 조회합니다. 모든 조건은 선택사항이며, 조건을 조합하여 검색할 수 있습니다. 페이징 파라미터를 제공하면 페이징 처리된 결과를 반환합니다.")
+    @Operation(summary = "복합 조건 검색", description = "이름, 계정 상태, 계정 유형을 조건으로 사용하여 사용자를 조회합니다. 모든 조건은 선택사항이며, 조건을 조합하여 검색할 수 있습니다. 페이징 파라미터를 제공하면 페이징 처리된 결과를 반환합니다.")
     public ResponseEntity<?> searchUsers(
             @Parameter(description = "이름 (부분 일치)") @RequestParam(required = false) String name,
-            @Parameter(description = "나이 (정확한 일치)") @RequestParam(required = false) Integer age,
-            @Parameter(description = "휴대번호 (부분 일치)") @RequestParam(required = false) String phone,
-            @Parameter(description = "주소 (부분 일치)") @RequestParam(required = false) String address,
+            @Parameter(description = "계정 상태 (A:활성화, D:탈퇴, R:휴면, H:보류)") @RequestParam(required = false) String status,
+            @Parameter(description = "계정 유형 (AGENCY, GENERATED, PERSONAL, PERSONAL_AGENCY_MEMBER, PERSONAL_GUARDIAN)") @RequestParam(required = false) String accountType,
             @Parameter(description = "페이지 번호 (0부터 시작)", example = "0") @RequestParam(required = false) Integer page,
             @Parameter(description = "페이지 크기 (한 페이지에 표시할 항목 수)", example = "10") @RequestParam(required = false) Integer size,
             @Parameter(description = "정렬 기준 (필드명,asc 또는 필드명,desc)", example = "id,asc") @RequestParam(required = false) String sort) {
 
         // 페이징 파라미터가 없으면 전체 목록 반환
         if (page == null && size == null && sort == null) {
-            List<UserResponseDTO> users = userService.searchUsers(name, age, phone, address);
+            List<UserResponseDTO> users = userService.searchUsers(name, status, accountType);
             return ResponseUtil.ok(users, "사용자 검색 성공");
         }
 
@@ -153,7 +148,7 @@ public class UserController {
         int pageNumber = (page != null && page >= 0) ? page : 0;
         int pageSize = (size != null && size > 0) ? size : 10;
 
-        Page<UserResponseDTO> userPage = userService.searchUsers(name, age, phone, address, pageNumber, pageSize, sort);
+        Page<UserResponseDTO> userPage = userService.searchUsers(name, status, accountType, pageNumber, pageSize, sort);
         return ResponseUtil.ok(userPage, "사용자 검색 성공 (페이징)");
     }
 

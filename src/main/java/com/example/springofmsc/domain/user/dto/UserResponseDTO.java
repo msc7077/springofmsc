@@ -1,14 +1,17 @@
 package com.example.springofmsc.domain.user.dto;
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.example.springofmsc.domain.user.entity.User;
+
 /**
  * 사용자 조회 응답 DTO
- * 클라이언트에게 반환하는 데이터
- * 불필요한 정보(filePath 등)는 제외
+ * 실제 DB 스키마에 맞춘 구조
  */
 @Getter
 @Setter
@@ -16,14 +19,18 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UserResponseDTO {
     private Long id;
-    private String userId;
-    private String name;
-    private String email;
-    private String phone;
-    private Integer age;
-    private String address;
-    private String fileName;      // 원본 파일명만 제공
-    private Long fileSize;        // 파일 크기
-    private String fileType;       // 파일 타입
-    // filePath는 제외 (서버 내부 경로이므로 클라이언트에게 불필요)
+    private String userid; // 로그인 아이디
+    private String name; // 사용자 이름
+    private String userType;
+    private User.AccountType accountType; // 회원 유형
+    private String userci; // 본인인증 CI
+    private String userdi; // 본인인증 DI
+    private String businessNumber; // 사업자 번호
+    private User.YesNo isAdmin; // 내부 관리자 여부
+    private String status; // 계정 상태 (A:활성화, D:탈퇴, R:휴면, H:보류)
+    private LocalDateTime statusAt; // 계정 상태 마지막 수정일
+    private User.YesNo expired; // 탈퇴여부
+    private LocalDateTime expiredAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

@@ -1,5 +1,6 @@
 package com.example.springofmsc.domain.user.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,6 +18,7 @@ import com.example.springofmsc.domain.user.repository.UserRepository;
 
 /**
  * 사용자 비즈니스 로직을 처리하는 Service 계층
+ * 실제 DB 스키마에 맞춘 구조
  */
 @Service
 @Transactional(readOnly = true)
@@ -57,18 +59,10 @@ public class UserService {
     }
 
     /**
-     * user_id로 사용자 조회
+     * userid로 사용자 조회
      */
-    public Optional<UserResponseDTO> getUserByUserId(String userId) {
-        return userRepository.findByUserId(userId)
-                .map(this::toResponseDTO);
-    }
-
-    /**
-     * 이메일로 사용자 조회
-     */
-    public Optional<UserResponseDTO> getUserByEmail(String email) {
-        return userRepository.findByEmail(email)
+    public Optional<UserResponseDTO> getUserByUserid(String userid) {
+        return userRepository.findByUserid(userid)
                 .map(this::toResponseDTO);
     }
 
@@ -103,31 +97,31 @@ public class UserService {
     }
 
     /**
-     * 나이로 사용자 조회
+     * 계정 상태로 사용자 조회
      */
-    public List<UserResponseDTO> getUsersByAge(Integer age) {
-        List<User> users = userRepository.findByAge(age);
+    public List<UserResponseDTO> getUsersByStatus(String status) {
+        List<User> users = userRepository.findByStatus(status);
         return users.stream()
                 .map(this::toResponseDTO)
                 .toList();
     }
 
     /**
-     * 나이로 사용자 조회 (페이징)
+     * 계정 상태로 사용자 조회 (페이징)
      */
-    public Page<UserResponseDTO> getUsersByAge(Integer age, int page, int size, String sort) {
+    public Page<UserResponseDTO> getUsersByStatus(String status, int page, int size, String sort) {
         Sort sortObj = createSort(sort, "id");
         Pageable pageable = PageRequest.of(page, size, sortObj);
-        Page<User> userPage = userRepository.findByAge(age, pageable);
+        Page<User> userPage = userRepository.findByStatus(status, pageable);
         return userPage.map(this::toResponseDTO);
     }
 
     /**
      * 복합 조건 검색
      */
-    public List<UserResponseDTO> searchUsers(String name, Integer age, String phone, String address) {
+    public List<UserResponseDTO> searchUsers(String name, String status, String accountType) {
         Pageable pageable = PageRequest.of(0, Integer.MAX_VALUE);
-        Page<User> userPage = userRepository.searchUsers(name, age, phone, address, pageable);
+        Page<User> userPage = userRepository.searchUsers(name, status, accountType, pageable);
         return userPage.getContent().stream()
                 .map(this::toResponseDTO)
                 .toList();
@@ -136,11 +130,11 @@ public class UserService {
     /**
      * 복합 조건 검색 (페이징)
      */
-    public Page<UserResponseDTO> searchUsers(String name, Integer age, String phone, String address,
+    public Page<UserResponseDTO> searchUsers(String name, String status, String accountType,
             int page, int size, String sort) {
         Sort sortObj = createSort(sort, "id");
         Pageable pageable = PageRequest.of(page, size, sortObj);
-        Page<User> userPage = userRepository.searchUsers(name, age, phone, address, pageable);
+        Page<User> userPage = userRepository.searchUsers(name, status, accountType, pageable);
         return userPage.map(this::toResponseDTO);
     }
 
@@ -149,17 +143,13 @@ public class UserService {
      */
     @Transactional
     public UserResponseDTO createUser(UserRequestDTO requestDTO) {
-        // user_id 중복 체크
-        if (userRepository.findByUserId(requestDTO.getUserId()).isPresent()) {
-            throw new IllegalArgumentException("User ID already exists: " + requestDTO.getUserId());
-        }
-
-        // email 중복 체크
-        if (userRepository.findByEmail(requestDTO.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email already exists: " + requestDTO.getEmail());
+        // userid 중복 체크
+        if (userRepository.findByUserid(requestDTO.getUserid()).isPresent()) {
+            throw new IllegalArgumentException("User ID already exists: " + requestDTO.getUserid());
         }
 
         User user = toEntity(requestDTO);
+        user.setCreatedAt(LocalDateTime.now());
         User savedUser = userRepository.save(user);
         return toResponseDTO(savedUser);
     }
@@ -172,28 +162,48 @@ public class UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
 
-        // user_id 변경 시 중복 체크
-        if (!user.getUserId().equals(requestDTO.getUserId())) {
-            if (userRepository.findByUserId(requestDTO.getUserId()).isPresent()) {
-                throw new IllegalArgumentException("User ID already exists: " + requestDTO.getUserId());
+        // userid 변경 시 중복 체크
+        if (requestDTO.getUserid() != null && !user.getUserid().equals(requestDTO.getUserid())) {
+            if (userRepository.findByUserid(requestDTO.getUserid()).isPresent()) {
+                throw new IllegalArgumentException("User ID already exists: " + requestDTO.getUserid());
             }
-        }
-
-        // email 변경 시 중복 체크
-        if (!user.getEmail().equals(requestDTO.getEmail())) {
-            if (userRepository.findByEmail(requestDTO.getEmail()).isPresent()) {
-                throw new IllegalArgumentException("Email already exists: " + requestDTO.getEmail());
-            }
+            user.setUserid(requestDTO.getUserid());
         }
 
         // 정보 업데이트
-        user.setUserId(requestDTO.getUserId());
-        user.setName(requestDTO.getName());
-        user.setEmail(requestDTO.getEmail());
-        user.setPhone(requestDTO.getPhone());
-        user.setAge(requestDTO.getAge());
-        user.setAddress(requestDTO.getAddress());
+        if (requestDTO.getName() != null) {
+            user.setName(requestDTO.getName());
+        }
+        if (requestDTO.getUserType() != null) {
+            user.setUserType(requestDTO.getUserType());
+        }
+        if (requestDTO.getAccountType() != null) {
+            user.setAccountType(requestDTO.getAccountType());
+        }
+        if (requestDTO.getUserci() != null) {
+            user.setUserci(requestDTO.getUserci());
+        }
+        if (requestDTO.getUserdi() != null) {
+            user.setUserdi(requestDTO.getUserdi());
+        }
+        if (requestDTO.getBusinessNumber() != null) {
+            user.setBusinessNumber(requestDTO.getBusinessNumber());
+        }
+        if (requestDTO.getIsAdmin() != null) {
+            user.setIsAdmin(requestDTO.getIsAdmin());
+        }
+        if (requestDTO.getStatus() != null) {
+            user.setStatus(requestDTO.getStatus());
+            user.setStatusAt(LocalDateTime.now());
+        }
+        if (requestDTO.getExpired() != null) {
+            user.setExpired(requestDTO.getExpired());
+            if (requestDTO.getExpired() == User.YesNo.Y) {
+                user.setExpiredAt(LocalDateTime.now());
+            }
+        }
 
+        user.setUpdatedAt(LocalDateTime.now());
         User updatedUser = userRepository.save(user);
         return toResponseDTO(updatedUser);
     }
@@ -232,16 +242,20 @@ public class UserService {
     private UserResponseDTO toResponseDTO(User user) {
         return new UserResponseDTO(
                 user.getId(),
-                user.getUserId(),
+                user.getUserid(),
                 user.getName(),
-                user.getEmail(),
-                user.getPhone(),
-                user.getAge(),
-                user.getAddress(),
-                user.getFileName(),
-                user.getFileSize(),
-                user.getFileType()
-        );
+                user.getUserType(),
+                user.getAccountType(),
+                user.getUserci(),
+                user.getUserdi(),
+                user.getBusinessNumber(),
+                user.getIsAdmin(),
+                user.getStatus(),
+                user.getStatusAt(),
+                user.getExpired(),
+                user.getExpiredAt(),
+                user.getCreatedAt(),
+                user.getUpdatedAt());
     }
 
     /**
@@ -249,12 +263,16 @@ public class UserService {
      */
     private User toEntity(UserRequestDTO requestDTO) {
         User user = new User();
-        user.setUserId(requestDTO.getUserId());
+        user.setUserid(requestDTO.getUserid());
         user.setName(requestDTO.getName());
-        user.setEmail(requestDTO.getEmail());
-        user.setPhone(requestDTO.getPhone());
-        user.setAge(requestDTO.getAge());
-        user.setAddress(requestDTO.getAddress());
+        user.setUserType(requestDTO.getUserType());
+        user.setAccountType(requestDTO.getAccountType());
+        user.setUserci(requestDTO.getUserci());
+        user.setUserdi(requestDTO.getUserdi());
+        user.setBusinessNumber(requestDTO.getBusinessNumber());
+        user.setIsAdmin(requestDTO.getIsAdmin() != null ? requestDTO.getIsAdmin() : User.YesNo.N);
+        user.setStatus(requestDTO.getStatus() != null ? requestDTO.getStatus() : "A");
+        user.setExpired(requestDTO.getExpired() != null ? requestDTO.getExpired() : User.YesNo.N);
         return user;
     }
 
@@ -272,8 +290,7 @@ public class UserService {
             String direction = sortParams[1].trim().toLowerCase();
             return Sort.by(
                     "desc".equals(direction) ? Sort.Direction.DESC : Sort.Direction.ASC,
-                    field
-            );
+                    field);
         }
 
         return Sort.by(Sort.Direction.ASC, defaultField);

@@ -1,8 +1,8 @@
 package com.example.springofmsc.domain.user.dto;
 
-import jakarta.validation.constraints.Email;
+import com.example.springofmsc.domain.user.entity.User;
+
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,7 +11,7 @@ import lombok.Setter;
 
 /**
  * 사용자 생성/수정 요청 DTO
- * 클라이언트로부터 받는 데이터
+ * 실제 DB 스키마에 맞춘 구조
  */
 @Getter
 @Setter
@@ -19,30 +19,31 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UserRequestDTO {
 
-    @NotBlank(message = "user_id는 필수입니다")
-    @Size(min = 3, max = 50, message = "user_id는 3자 이상 50자 이하여야 합니다")
-    private String userId;
+    @NotBlank(message = "userid는 필수입니다")
+    @Size(min = 3, max = 100, message = "userid는 3자 이상 100자 이하여야 합니다")
+    private String userid; // 로그인 아이디
 
-    @NotBlank(message = "이름은 필수입니다")
-    @Size(min = 1, max = 50, message = "이름은 1자 이상 50자 이하여야 합니다")
-    private String name;
+    @Size(max = 100, message = "이름은 100자 이하여야 합니다")
+    private String name; // 사용자 이름
 
-    @NotBlank(message = "이메일은 필수입니다")
-    @Email(message = "올바른 이메일 형식이 아닙니다")
-    @Size(max = 100, message = "이메일은 100자 이하여야 합니다")
-    private String email;
+    @Size(max = 50, message = "user_type은 50자 이하여야 합니다")
+    private String userType;
 
-    @Pattern(regexp = "^[0-9-]+$", message = "전화번호는 숫자와 하이픈(-)만 사용할 수 있습니다")
-    @Size(max = 20, message = "전화번호는 20자 이하여야 합니다")
-    private String phone;
+    private User.AccountType accountType; // 회원 유형
 
-    @jakarta.validation.constraints.Min(value = 0, message = "나이는 0 이상이어야 합니다")
-    @jakarta.validation.constraints.Max(value = 150, message = "나이는 150 이하여야 합니다")
-    private Integer age;
+    @Size(max = 255, message = "userci는 255자 이하여야 합니다")
+    private String userci; // 본인인증 CI
 
-    @Size(max = 200, message = "주소는 200자 이하여야 합니다")
-    private String address;
+    @Size(max = 255, message = "userdi는 255자 이하여야 합니다")
+    private String userdi; // 본인인증 DI
 
-    // id는 제외 (자동 생성되므로)
-    // 파일 관련 필드는 제외 (별도 API로 처리)
+    @Size(max = 100, message = "사업자 번호는 100자 이하여야 합니다")
+    private String businessNumber; // 사업자 번호
+
+    private User.YesNo isAdmin; // 내부 관리자 여부
+
+    @Size(max = 10, message = "status는 10자 이하여야 합니다")
+    private String status; // 계정 상태 (A:활성화, D:탈퇴, R:휴면, H:보류)
+
+    private User.YesNo expired; // 탈퇴여부
 }
