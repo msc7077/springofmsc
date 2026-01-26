@@ -1,18 +1,17 @@
 package com.example.springofmsc.domain.notice.controller;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.springofmsc.domain.notice.entity.AgencyNotice;
+import com.example.springofmsc.domain.notice.dto.AgencyNoticeRequestDTO;
+import com.example.springofmsc.domain.notice.dto.AgencyNoticeResponseDTO;
+import com.example.springofmsc.domain.notice.dto.PageResponseDTO;
 import com.example.springofmsc.domain.notice.service.AgencyNoticeService;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
@@ -50,26 +49,29 @@ public class AgencyNoticeController {
 	private final AgencyNoticeService agencyNoticeService;
 
 	/**
-	 * agency_id로 공지사항 목록 조회
+	 * agency_id로 공지사항 목록 조회 (페이징 처리)
 	 * 
 	 * [@GetMapping]
 	 * - GET 요청을 처리합니다.
-	 * - URL: GET /api/notices?agencyId=123
+	 * - URL: GET /api/notices?agencyId=123&page=0&size=10
 	 * 
-	 * [@RequestParam]
-	 * - 쿼리 파라미터를 받습니다.
-	 * - 예: GET /api/notices?agencyId=123 → agencyId = 123
+	 * [@ModelAttribute]
+	 * - 쿼리 파라미터를 DTO 객체로 받습니다.
+	 * - 예: GET /api/notices?agencyId=123&page=0&size=10
+	 * → AgencyNoticeRequestDTO { agencyId=123, page=0, size=10 }
 	 * 
-	 * [required = true]
-	 * - 파라미터가 필수입니다.
-	 * - 없으면 400 Bad Request 에러가 발생합니다.
+	 * [페이징 파라미터]
+	 * - agencyId: 기관 ID (필수)
+	 * - page: 페이지 번호 (선택, 기본값: 0)
+	 * - size: 페이지 크기 (선택, 기본값: 10)
 	 * 
 	 * [동작 흐름]
-	 * 1. 프론트에서 GET /api/notices?agencyId=123 요청
-	 * 2. 이 메서드가 실행됨
+	 * 1. 프론트에서 GET /api/notices?agencyId=123&page=0&size=10 요청
+	 * 2. @ModelAttribute로 RequestDTO에 파라미터 자동 바인딩
 	 * 3. Service의 findByAgencyId() 호출
-	 * 4. Repository가 DB에서 조회 (Slave DB 사용)
-	 * 5. 결과를 JSON으로 변환하여 반환
+	 * 4. Repository가 DB에서 페이징된 데이터 조회 (Slave DB 사용)
+	 * 5. Entity를 ResponseDTO로 변환
+	 * 6. PageResponseDTO로 감싸서 반환
 	 * 
 	 * [참고: 나중에 할 작업]
 	 * - 현재는 로그인한 사용자 정보(id: 24, userid: tester)를 하드코딩
@@ -81,19 +83,25 @@ public class AgencyNoticeController {
 	 * - summary: 간단한 설명
 	 * - description: 자세한 설명
 	 * 
-	 * [@Parameter]
-	 * - Swagger UI에 표시될 파라미터 설명을 작성합니다.
-	 * - name: 파라미터 이름
-	 * - description: 파라미터 설명
-	 * - required: 필수 여부
+	 * [응답 형식]
+	 * {
+	 * "content": [공지사항 목록],
+	 * "totalElements": 100,
+	 * "totalPages": 10,
+	 * "currentPage": 0,
+	 * "pageSize": 10,
+	 * "hasNext": true,
+	 * "hasPrevious": false
+	 * }
 	 * 
-	 * @param agencyId 기관 ID (프론트에서 받는 값, 필수)
-	 * @return 해당 기관 ID의 공지사항 목록 (200 OK)
+	 * @param requestDTO 요청 DTO (agencyId, page, size 포함)
+	 * @return 페이징된 공지사항 목록 (200 OK)
 	 */
-	@Operation(summary = "기관 공지사항 조회", description = "agency_id로 해당 기관의 공지사항 목록을 조회합니다.")
+	@Operation(summary = "기관 공지사항 조회 (페이징)", description = "agency_id로 해당 기관의 공지사항 목록을 페이징 처리하여 조회합니다. "
+			+ "파라미터: agencyId(필수), page(선택, 기본값:0), size(선택, 기본값:10)")
 	@GetMapping
-	public ResponseEntity<List<AgencyNotice>> getNoticesByAgencyId(
-			@Parameter(description = "기관 ID", required = true, example = "123") @RequestParam(required = true) Integer agencyId) {
+	public ResponseEntity<PageResponseDTO<AgencyNoticeResponseDTO>> getNoticesByAgencyId(
+			@ModelAttribute AgencyNoticeRequestDTO requestDTO) {
 
 		// [참고] 나중에 token에서 사용자 정보 추출
 		// 현재는 하드코딩: id = 24, userid = "tester"
@@ -101,12 +109,13 @@ public class AgencyNoticeController {
 		// String userid = "tester";
 		// token에서 추출한 사용자 정보로 권한 체크 등을 할 수 있음
 
-		// Service를 통해 agency_id로 공지사항 목록 조회
+		// Service를 통해 agency_id로 공지사항 목록 조회 (페이징 처리)
 		// readOnly = true이므로 Slave DB를 사용합니다
-		List<AgencyNotice> notices = agencyNoticeService.findByAgencyId(agencyId);
+		// Entity를 ResponseDTO로 변환하여 반환
+		PageResponseDTO<AgencyNoticeResponseDTO> response = agencyNoticeService.findByAgencyId(requestDTO);
 
 		// 200 OK 상태 코드와 함께 결과 반환
-		// List<AgencyNotice>는 자동으로 JSON 배열로 변환됩니다
-		return ResponseEntity.ok(notices);
+		// PageResponseDTO는 자동으로 JSON으로 변환됩니다
+		return ResponseEntity.ok(response);
 	}
 }
