@@ -4,36 +4,20 @@ spring:
   datasource:
     # Master-Slave 설정
     master:
-      url: jdbc:mysql://localhost:33061/msc_database?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      url: jdbc:mysql://127.0.0.1:33061/msc_database?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
       username: app_master
       password: 1234
       driver-class-name: com.mysql.cj.jdbc.Driver
     slave:
-      url: jdbc:mysql://localhost:33062/msc_database?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      url: jdbc:mysql://127.0.0.1:33062/msc_database?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
       username: app_slave
       password: 1234
       driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: none # 스키마 검증 비활성화 (실제 DB 스키마와 엔티티가 다를 수 있으므로)
-    show-sql: true # SQL 쿼리 로그 출력
+      ddl-auto: none
+    show-sql: true
     properties:
       hibernate:
-        format_sql: true # SQL 포맷팅
+        format_sql: true
         dialect: org.hibernate.dialect.MySQLDialect
-  servlet:
-    multipart:
-      enabled: true
-      max-file-size: 10MB
-      max-request-size: 10MB
-
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-
-# 파일 업로드 설정
-file:
-  upload-dir: uploads
-  max-size: 10MB
