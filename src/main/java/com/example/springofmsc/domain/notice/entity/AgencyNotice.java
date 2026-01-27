@@ -1,6 +1,6 @@
 package com.example.springofmsc.domain.notice.entity;
 
-import java.time.LocalDateTime;
+import com.example.springofmsc.common.entity.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,6 +20,11 @@ import lombok.Setter;
  * - 데이터베이스 agency_notice 테이블과 1:1로 매핑되는 Java 클래스입니다.
  * - JPA가 이 클래스를 보고 데이터베이스와 소통합니다.
  * 
+ * [BaseEntity 상속]
+ * - BaseEntity를 상속받아서 createdAt, updatedAt 필드를 자동으로 가집니다.
+ * - 생성일시와 수정일시가 자동으로 관리됩니다.
+ * - @CreatedDate, @LastModifiedDate가 자동으로 동작합니다.
+ * 
  * [Lombok 어노테이션]
  * - @Getter: 모든 필드의 getter 메서드 자동 생성
  * - @Setter: 모든 필드의 setter 메서드 자동 생성
@@ -30,7 +35,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class AgencyNotice {
+public class AgencyNotice extends BaseEntity {
 
 	/**
 	 * Primary Key
@@ -89,18 +94,7 @@ public class AgencyNotice {
 	@Column(name = "is_private", length = 1, columnDefinition = "CHAR(1) DEFAULT 'N'")
 	private String isPrivate;
 
-	/**
-	 * 생성일시
-	 */
-	@Column(name = "created_at")
-	private LocalDateTime createdAt;
-
-	/**
-	 * 수정일시
-	 */
-	@Column(name = "updated_at")
-	private LocalDateTime updatedAt;
-
-	// Lombok이 자동으로 Getter와 Setter 메서드를 생성합니다.
-	// @Getter와 @Setter 어노테이션으로 모든 필드의 getter/setter가 자동 생성됩니다.
+	// createdAt, updatedAt은 BaseEntity에서 상속받음
+	// BaseEntity에 @CreatedDate, @LastModifiedDate가 있어서 자동으로 관리됨
+	// 수동으로 설정할 필요 없음
 }
